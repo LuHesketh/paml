@@ -10,8 +10,11 @@ class ProtocolTyping:
         self.flow_values = {}  # dictionary of paml.Flow : type value, includes subprotocols too
         self.typed_protocols = set()  # protocol and subprotocols already evaluated or in process of evaluation
         self.cache = {} # kludge for accelerating inflow satisfaction computation
+        # Now, a kludge for holding all of the children we're inferring with that need a parent
+        self.kludge_parent = paml.Protocol('kludge_parent')
 
     def infer_typing(self, protocol : paml.Protocol):
+        protocol.document.add(self.kludge_parent) # add the kludge parent to the document
         self.typed_protocols.add(protocol)
         pending_activities = set(protocol.activities)
         print('Building activity cache non-blocked')
@@ -19,6 +22,7 @@ class ProtocolTyping:
         while pending_activities:
             print('Collecting non-blocked activities out of pending '+str(len(pending_activities)))
             non_blocked = {a for a in pending_activities if self.inflows_satisfied(a)}
+            print('Found '+str(len(non_blocked))+' non-blocked activities')
             if not non_blocked:
                 raise ValueError("Could not infer all flow types in "+protocol.identity+": circular dependency?")
             for activity in non_blocked:

@@ -28,6 +28,7 @@ def liquid_handling_provision_infer_typing(executable, typing: ProtocolTyping):
     location = executable.input_pin('destination').input_type(typing)
     samples = paml.ReplicateSamples(specification=resource)
     samples.in_location.append(location)
+    typing.kludge_parent.locations.append(samples)
     executable.output_pin('samples').assert_output_type(typing, samples)
 primitive_type_inference_functions[LIQUID_HANDLING_PREFIX+'Provision'] = liquid_handling_provision_infer_typing
 
@@ -38,6 +39,7 @@ def liquid_handling_dispense_infer_typing(executable, typing: ProtocolTyping):
     location = executable.input_pin('destination').input_type(typing).lookup()
     samples = paml.ReplicateSamples(specification=source.specification) # TODO: Fix the kludge here
     samples.in_location.append(location)
+    typing.kludge_parent.locations.append(samples)
     executable.output_pin('samples').assert_output_type(typing, samples)
 primitive_type_inference_functions[LIQUID_HANDLING_PREFIX+'Dispense'] = liquid_handling_dispense_infer_typing
 
@@ -55,6 +57,7 @@ def liquid_handling_transfer_infer_typing(executable, typing: ProtocolTyping):
         relocated.replicate_samples.append(kludge)
     else:
         raise ValueError("Don't know how to infer type for Transfer with source of type "+str(type(source)))
+    typing.kludge_parent.locations.append(relocated)
     executable.output_pin('samples').assert_output_type(typing, relocated)
 primitive_type_inference_functions[LIQUID_HANDLING_PREFIX + 'Transfer'] = liquid_handling_transfer_infer_typing
 
@@ -62,6 +65,7 @@ primitive_type_inference_functions[LIQUID_HANDLING_PREFIX + 'Transfer'] = liquid
 def liquid_handling_transferinto_infer_typing(executable, typing: ProtocolTyping):
     source = executable.input_pin('source').input_type(typing)
     destination = executable.input_pin('destination').input_type(typing)
+    print('Inferring on source: '+str(source.identity)+' destination: '+str(destination.identity))
     if isinstance(source, paml.ReplicateSamples) and isinstance(destination, paml.ReplicateSamples):
         contents = sbol3.Component(executable.display_id+'_contents', sbol3.SBO_FUNCTIONAL_ENTITY)  # generic mixture
         mixture = paml.ReplicateSamples(specification=contents)
@@ -74,6 +78,7 @@ def liquid_handling_transferinto_infer_typing(executable, typing: ProtocolTyping
         mixture.replicate_samples.append(kludge)
     else:
         raise ValueError("Don't know how to infer type for TransferInto "+executable.identity+" with source and destination types "+str(type(source))+', '+str(type(destination)))
+    typing.kludge_parent.locations.append(mixture)
     executable.output_pin('samples').assert_output_type(typing, mixture)
 primitive_type_inference_functions[LIQUID_HANDLING_PREFIX + 'TransferInto'] = liquid_handling_transferinto_infer_typing
 
