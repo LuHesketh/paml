@@ -36,7 +36,7 @@ primitive_type_inference_functions[LIQUID_HANDLING_PREFIX+'Provision'] = liquid_
 def liquid_handling_dispense_infer_typing(executable, typing: ProtocolTyping):
     source = executable.input_pin('source').input_type(typing)  # Assumed singular replicate
     assert isinstance(source, paml.ReplicateSamples), ValueError('Dispense must come from a homogeneous source, but found '+str(source))
-    location = executable.input_pin('destination').input_type(typing).lookup()
+    location = executable.input_pin('destination').input_type(typing)
     samples = paml.ReplicateSamples(specification=source.specification) # TODO: Fix the kludge here
     samples.in_location.append(location)
     typing.kludge_parent.locations.append(samples)
@@ -64,17 +64,16 @@ primitive_type_inference_functions[LIQUID_HANDLING_PREFIX + 'Transfer'] = liquid
 
 def liquid_handling_transferinto_infer_typing(executable, typing: ProtocolTyping):
     source = executable.input_pin('source').input_type(typing)
-    destination = executable.input_pin('destination').input_type(typing)
+    destination = executable.input_pin('destination').input_type(typing) # Location
     print('Inferring on source: '+str(source.identity)+' destination: '+str(destination.identity))
-    if isinstance(source, paml.ReplicateSamples) and isinstance(destination, paml.ReplicateSamples):
+    if isinstance(source, paml.ReplicateSamples):
         contents = sbol3.Component(executable.display_id+'_contents', sbol3.SBO_FUNCTIONAL_ENTITY)  # generic mixture
         mixture = paml.ReplicateSamples(specification=contents)
         mixture.in_location.append(destination)
-    elif isinstance(source, paml.LocatedSamples) and isinstance(destination, paml.LocatedSamples):
+    elif isinstance(source, paml.LocatedSamples):
         mixture = paml.HeterogeneousSamples()
         kludge = paml.ReplicateSamples() # TODO: put something real here instead
-        kludge_loc = (destination.in_location if isinstance(destination, paml.ReplicateSamples) else destination.replicate_samples[0].in_location)
-        kludge.in_location.append(kludge_loc[0])
+        kludge.in_location.append(destination)
         mixture.replicate_samples.append(kludge)
     else:
         raise ValueError("Don't know how to infer type for TransferInto "+executable.identity+" with source and destination types "+str(type(source))+', '+str(type(destination)))
@@ -105,10 +104,20 @@ primitive_type_inference_functions[PLATE_HANDLING_PREFIX+'Incubate'] = no_output
 
 SPECTROPHOTOMETRY = 'https://bioprotocols.org/paml/primitives/spectrophotometry/'
 
+def find_or_make_unknown(typing):
+    exists = typing.kludge_parent.document.find('Unknown')
+    if exists:
+        return exists
+    else:
+        unknown = sbol3.Component('http://kludge.org/Unknown', sbol3.SBO_FUNCTIONAL_ENTITY)
+        typing.kludge_parent.document.add(unknown)
+        return unknown
 
 def spectrophotometry_infer_typing(executable, typing: ProtocolTyping):
-    samples = executable.input_pin('samples').input_type(typing)
+    location = executable.input_pin('location').input_type(typing) # KLUDGE KLUDGE
     # TODO: figure out how to add appropriate metadata onto these
+    samples = paml.ReplicateSamples(specification=find_or_make_unknown(typing))
+    samples.in_location.append(location)
     data = paml.LocatedData()
     data.from_samples = samples
     executable.output_pin('measurements').assert_output_type(typing, data)

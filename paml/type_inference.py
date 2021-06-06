@@ -1,4 +1,5 @@
 import paml
+import sbol3
 from paml.lib.library_type_inference import primitive_type_inference_functions
 
 ##############################
@@ -11,7 +12,7 @@ class ProtocolTyping:
         self.typed_protocols = set()  # protocol and subprotocols already evaluated or in process of evaluation
         self.cache = {} # kludge for accelerating inflow satisfaction computation
         # Now, a kludge for holding all of the children we're inferring with that need a parent
-        self.kludge_parent = paml.Protocol('kludge_parent')
+        self.kludge_parent = paml.Protocol('http://kludge.org/kludge_parent')
 
     def infer_typing(self, protocol : paml.Protocol):
         protocol.document.add(self.kludge_parent) # add the kludge parent to the document
@@ -41,7 +42,10 @@ class ProtocolTyping:
 
 def pin_input_type(self, typing: ProtocolTyping):
     try:
-        return self.value
+        if isinstance(self, paml.ReferenceValuePin):
+            return self.value.lookup()
+        else:
+            return self.value
     except AttributeError:
         in_flows = self.input_flows()
         assert len(in_flows) == 1, \
@@ -51,6 +55,7 @@ paml.Pin.input_type = pin_input_type
 
 
 def pin_assert_output_type(self, typing: ProtocolTyping, value):
+    print('Setting output type of '+self.identity+' to '+str(value))
     out_flows = self.output_flows()
     # TODO: need to decide if this type of implicit fork is acceptable
     for f in out_flows:

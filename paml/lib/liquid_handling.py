@@ -42,7 +42,7 @@ doc.add(p)
 p = paml.Primitive('TransferInto')
 p.description = 'Mix a measured volume taken from an collection of source samples into a collection of destination samples whose shame can contain them'
 p.add_input('source', 'http://bioprotocols.org/paml#LocatedSamples')
-p.add_input('destination', 'http://bioprotocols.org/paml#LocatedSamples')
+p.add_input('destination', 'http://bioprotocols.org/paml#Location')
 p.add_input('amount', sbol3.OM_MEASURE) # Must be volume
 p.add_input('mixCycles', sbol3.OM_MEASURE, True)
 p.add_input('dispenseVelocity', sbol3.OM_MEASURE, True)

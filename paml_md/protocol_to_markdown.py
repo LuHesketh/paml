@@ -196,7 +196,7 @@ paml.ReferenceValuePin.to_markdown = referencevaluepin_to_markdown
 # A non-constant pin needs to pull its value from the flow
 def pin_to_markdown(self: paml.Pin, mdc: MarkdownConverter):
     inflows = self.input_flows()
-    assert len(inflows)==1, ValueError('Pin has more than one input flow: '+self.identity)
+    assert len(inflows)==1, ValueError('Pin has other than precisely one input flow: '+self.identity)
     value = mdc.protocol_typing.flow_values[inflows.pop()]
     return value.to_markdown(mdc)
 paml.Pin.to_markdown = pin_to_markdown
@@ -356,7 +356,9 @@ def excel_write_containercoodinates(ws, row_offset, col_offset, coordinates, spe
             ws[coord].fill = copy(entry_style)
             ws[coord].alignment = openpyxl.styles.Alignment(horizontal="center")
             plate_coord = openpyxl.utils.cell.get_column_letter(block[0]+plate_row)+str(block[1]+plate_col)
-            ws[coord].comment = openpyxl.comments.Comment(coordinates.in_container+"_"+plate_coord+" "+specification_URI, "PAML autogeneration, do not modify", height=24, width=1000)
+            #ws[coord].comment = openpyxl.comments.Comment(coordinates.in_container+"_"+plate_coord+" "+specification_URI, "PAML autogeneration, do not modify", height=24, width=1000)
+            # Kludge: remove non-functional contents specification for now
+            ws[coord].comment = openpyxl.comments.Comment(coordinates.in_container+"_"+plate_coord, "PAML autogeneration, do not modify", height=24, width=1000)
             ws[coord].protection = openpyxl.styles.Protection(locked=False)
 
     return (height+2, width+1)
@@ -370,6 +372,7 @@ def excel_write_location(ws, row_offset, col_offset, location, specification_URI
         return str(location)
 
 def excel_write_mergedlocations(ws, row_offset, location_spec_list):
+    print('Writing locations '+str(location_spec_list))
     col_offset = 0
     block_height = 0
     while location_spec_list:
@@ -384,11 +387,27 @@ def excel_write_flow_value(document, value, ws, row_offset):
     if isinstance(value, paml.LocatedData):
         value = value.from_samples  # unwrap value
     if isinstance(value, paml.ReplicateSamples):
-        return excel_write_mergedlocations(ws, row_offset, {x.lookup():value.specification for x in value.in_location})
+        return excel_write_mergedlocations(ws, row_offset, {document.find(x):value.specification for x in value.in_location})
     elif isinstance(value, paml.HeterogeneousSamples):
         return excel_write_mergedlocations(ws, row_offset, {document.find(loc):rep.specification for rep in value.replicate_samples for loc in rep.in_location})
     # if we fall through to here:
-    return str(value)
+    raise("Don't know how to serialize "+value)
+    #return str(value)
+
+
+def data_producing_activity(a, mdc: MarkdownConverter):
+    try:
+        pin = a.output_pin('measurements')
+        flow = pin.output_flows().pop()
+        type = mdc.protocol_typing.flow_values[flow]
+        return isinstance(type, paml.LocatedData)
+    except AssertionError:
+        return False
+
+def activity_data(a, mdc: MarkdownConverter):
+    pin = a.output_pin('measurements')
+    flow = pin.output_flows().pop()
+    return mdc.protocol_typing.flow_values[flow]
 
 
 def write_excel_file(protocol, serialized_noncontrol_activities, mdc: MarkdownConverter):
@@ -408,13 +427,15 @@ def write_excel_file(protocol, serialized_noncontrol_activities, mdc: MarkdownCo
     row_offset = 7  # starting point for entries
 
     # write each value set, incrementing each time
-    value_steps = (step for step in range(len(serialized_noncontrol_activities)) if
-                   isinstance(serialized_noncontrol_activities[step], paml.Value))
+    print('Searching for steps to write to Excel')
+    value_steps = [step for step in range(len(serialized_noncontrol_activities)) if data_producing_activity(serialized_noncontrol_activities[step], mdc)]
+    print('Found '+str(len(value_steps))+' steps')
     for step in value_steps:
+        print('Writing Excel for step '+str(step))
         coord = 'A' + str(row_offset)
         ws[coord] = 'Report from Step ' + str(step + 1)
         ws[coord].font = copy(header_style)
-        value_locations = mdc.protocol_typing.flow_values[serialized_noncontrol_activities[step].input_flows().pop()]
+        value_locations = activity_data(serialized_noncontrol_activities[step], mdc)
         block_height = excel_write_flow_value(mdc.document, value_locations, ws, row_offset + 1)
         row_offset += block_height + 2
 

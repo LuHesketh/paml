@@ -24,15 +24,6 @@ doc.add(rpm)
 #############################################
 # Create the protocols
 
-print('Adding experimental SampleSubset primitive')
-
-p = paml.Primitive('SampleSubset')
-p.description = 'Select a subset of samples'
-p.add_input('samples', 'http://bioprotocols.org/paml#LocatedSamples')
-p.add_input('location', 'http://bioprotocols.org/paml#Location')
-p.add_output('subset', 'http://bioprotocols.org/paml#LocatedSamples')
-doc.add(p)
-
 print('Constructing dual calibration protocol')
 
 protocol = paml.Protocol('MEFL_particle_calibration', name="Fluorescein per bacterial particle calibration")
@@ -103,6 +94,7 @@ volume = sbol3.Measure(1,tyto.OM.milliliter,types={tyto.SBO.volume})
 microsphere_solution.features.append(sbol3.SubComponent(ddh2o,measures={volume}))
 count = sbol3.Measure(3e9,tyto.OM.number,types={tyto.SBO.number_of_entity_pool_constituents})
 microsphere_solution.features.append(sbol3.SubComponent(microspheres,measures={count}))
+doc.add(microsphere_solution)
 
 protocol.material = {ddh2o, pbs, fluorescein_solution, microsphere_solution}
 
@@ -127,74 +119,69 @@ p_dd = protocol.execute_primitive('Provision', resource=ddh2o, destination=locat
                                    amount=sbol3.Measure(100, tyto.OM.microliter))
 protocol.add_flow(protocol.initial(), p_dd) # start with provisioning
 
-## Do the fluorescein first, since it will settle less
-fluorescein_ready_to_measure = paml.Join()
-protocol.activities.append(fluorescein_ready_to_measure)
+ready_to_measure = paml.Join()
+protocol.activities.append(ready_to_measure)
 
+## Do the fluorescein first, since it will settle less
 location = paml.ContainerCoordinates(in_container=plate, coordinates='A1:D1')
 protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
 # Dispense initial fluorescein
 p_f1 = protocol.execute_primitive('Dispense', source=p_fs.output_pin('samples'), destination=location,
                                    amount=sbol3.Measure(200, tyto.OM.microliter))
-protocol.add_flow(p_f1.output_pin('samples'),fluorescein_ready_to_measure)
 # Serial dilution across columns 2-11
 last = p_f1
 for c in range(2, 12):
     location = paml.ContainerCoordinates(in_container=plate, coordinates='A'+str(c)+':D'+str(c))
     protocol.locations.append(location)  # TODO: This seems like a potential anti-pattern
-    destination_samples = protocol.execute_primitive('SampleSubset',samples=p_pbs.output_pin('samples'),location=location)
     p_fi = protocol.execute_primitive('TransferInto', source=last.output_pin('samples'),
-                                      destination=destination_samples.output_pin('subset'),
+                                      destination=location,
                                       amount=sbol3.Measure(100, tyto.OM.microliter),
                                       mixCycles=sbol3.Measure(3, tyto.OM.number))
-    protocol.add_flow(p_fi.output_pin('samples'), fluorescein_ready_to_measure)
     last = p_fi
 # Discard half of last well
 p_fdiscard = protocol.execute_primitive('Transfer', source=last.output_pin('samples'), destination=disposal,
                                         amount=sbol3.Measure(100, tyto.OM.microliter))
-# Also measure the blanks
-location = paml.ContainerCoordinates(in_container=plate, coordinates='A12:D12')
-protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
-blanks = protocol.execute_primitive('SampleSubset', samples=p_pbs.output_pin('samples'), location=location)
-protocol.add_flow(blanks.output_pin('subset'), fluorescein_ready_to_measure)
+# After the last step, ready to measure
+protocol.add_flow(p_fdiscard, ready_to_measure)
+
 
 ## Next, do the beads
-beads_ready_to_measure = paml.Join()
-protocol.activities.append(beads_ready_to_measure)
-
 location = paml.ContainerCoordinates(in_container=plate, coordinates='E1:H1')
 protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
 # Dispense initial fluorescein
 p_p1 = protocol.execute_primitive('Dispense', source=p_ms.output_pin('samples'), destination=location,
                                    amount=sbol3.Measure(200, tyto.OM.microliter))
-protocol.add_flow(p_p1.output_pin('samples'),beads_ready_to_measure)
+# Make sure beads don't start until the fluorescein is done
+protocol.add_flow(p_fdiscard, p_p1)
 # Serial dilution across columns 2-11
 last = p_p1
 for c in range(2, 12):
     location = paml.ContainerCoordinates(in_container=plate, coordinates='E'+str(c)+':H'+str(c))
     protocol.locations.append(location)  # TODO: This seems like a potential anti-pattern
-    destination_samples = protocol.execute_primitive('SampleSubset',samples=p_dd.output_pin('samples'),location=location)
     p_pi = protocol.execute_primitive('TransferInto', source=last.output_pin('samples'),
-                                      destination=destination_samples.output_pin('subset'),
+                                      destination=location,
                                       amount=sbol3.Measure(100, tyto.OM.microliter),
                                       mixCycles=sbol3.Measure(3, tyto.OM.number))
-    protocol.add_flow(p_pi.output_pin('samples'), beads_ready_to_measure)
     last = p_pi
 # Discard half of last well
 p_pdiscard = protocol.execute_primitive('Transfer', source=last.output_pin('samples'), destination=disposal,
                                           amount=sbol3.Measure(100, tyto.OM.microliter))
-location = paml.ContainerCoordinates(in_container=plate, coordinates='E12:H12')
-protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
-blanks = protocol.execute_primitive('SampleSubset', samples=p_dd.output_pin('samples'), location=location)
-protocol.add_flow(blanks.output_pin('subset'), beads_ready_to_measure)
+# After the last step, ready to measure
+protocol.add_flow(p_pdiscard, ready_to_measure)
 
 
 # Finally, measure the two batches
-p_a = protocol.execute_primitive('MeasureAbsorbance', samples=fluorescein_ready_to_measure,
-                                          wavelength=sbol3.Measure(600, tyto.OM.nanometer))
-p_f = protocol.execute_primitive('MeasureFluorescence', samples=beads_ready_to_measure,
+location = paml.ContainerCoordinates(in_container=plate, coordinates='A1:D12')
+protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
+p_f = protocol.execute_primitive('MeasureFluorescence', location=location,
                                  excitationWavelength=sbol3.Measure(488, tyto.OM.nanometer),
                                  emissionBandpassWavelength=sbol3.Measure(530, tyto.OM.nanometer))
+protocol.add_flow(ready_to_measure, p_f)
+location = paml.ContainerCoordinates(in_container=plate, coordinates='E1:H12')
+protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
+p_a = protocol.execute_primitive('MeasureAbsorbance', location=location,
+                                          wavelength=sbol3.Measure(600, tyto.OM.nanometer))
+protocol.add_flow(ready_to_measure, p_a)
 result = protocol.add_output('absorbance', p_a.output_pin('measurements'))
 protocol.add_flow(result, protocol.final())
 result = protocol.add_output('fluorescence', p_f.output_pin('measurements'))

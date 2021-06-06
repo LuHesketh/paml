@@ -113,21 +113,23 @@ SPECTROPHOTOMETRY = 'https://bioprotocols.org/paml/primitives/spectrophotometry/
 
 
 def spectrophotometry_absorbance_to_markdown(executable, mdc: MarkdownConverter):
-    samples = executable.input_pin('samples').to_markdown(mdc)
+    location = executable.input_pin('location').to_markdown(mdc)
     wavelength = executable.input_pin('wavelength').to_markdown(mdc)
-    return 'Measure absorbance of '+samples+' at '+wavelength+'\n'
+    return 'Measure absorbance of '+location+' at '+wavelength+'\n'
 primitive_to_markdown_functions[SPECTROPHOTOMETRY+'MeasureAbsorbance'] = spectrophotometry_absorbance_to_markdown
 
 
 def spectrophotometry_fluorescence_to_markdown(executable, mdc: MarkdownConverter):
-    samples = executable.input_pin('samples').to_markdown(mdc)
+    location = executable.input_pin('location').to_markdown(mdc)
     excitation = executable.input_pin('excitationWavelength').to_markdown(mdc)
     # TODO: fix kludge: don't assume whether optionals are present
     bp_wavelength = executable.input_pin('emissionBandpassWavelength').to_markdown(mdc)
     #bp_width = executable.input_pin('emissionBandpassWidth').to_markdown(mdc)
     emission = bp_wavelength  #+' / '+bp_width
-    gain = executable.input_pin('gain').to_markdown(mdc)
-    return 'Measure fluorescence of '+samples+' at excitation '+excitation+' and emission '+emission+' with gain = '+gain+'\n'
+    #gain = executable.input_pin('gain').to_markdown(mdc)
+    #return 'Measure fluorescence of '+location+' at excitation '+excitation+' and emission '+emission+' with gain = '+gain+'\n'
+    # No gain kludge
+    return 'Measure fluorescence of '+location+' at excitation '+excitation+' and emission '+emission+'\n'
 primitive_to_markdown_functions[SPECTROPHOTOMETRY+'MeasureFluorescence'] = spectrophotometry_fluorescence_to_markdown
 
 

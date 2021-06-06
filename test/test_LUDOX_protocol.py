@@ -71,10 +71,13 @@ is only weakly scattering and so will give a low absorbance value.
         protocol.add_flow(provision_ludox.output_pin('samples'), all_provisioned)
         protocol.add_flow(provision_ddh2o.output_pin('samples'), all_provisioned)
 
-        execute_measurement = protocol.execute_primitive('MeasureAbsorbance', samples=all_provisioned,
+        location = paml.ContainerCoordinates(in_container=plate, coordinates='A1:D2')
+        protocol.locations.append(location)
+        execute_measurement = protocol.execute_primitive('MeasureAbsorbance', location=location,
                                                          wavelength=sbol3.Measure(600, tyto.OM.nanometer))
 
         result = protocol.add_output('absorbance', execute_measurement.output_pin('measurements'))
+        protocol.add_flow(all_provisioned, execute_measurement)
         protocol.add_flow(result, protocol.final())
 
         ########################################
@@ -91,7 +94,7 @@ is only weakly scattering and so will give a low absorbance value.
 
     def test_protocol_to_markdown(self):
         doc = sbol3.Document()
-        doc.read('test/testfiles/igem_ludox_draft.nt', 'nt')
+        doc.read('testfiles/igem_ludox_draft.nt', 'nt')
         paml_md.MarkdownConverter(doc).convert('iGEM_LUDOX_OD_calibration_2018')
 
         # Checking if files are identical needs to wait for increased stability
