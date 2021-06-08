@@ -132,7 +132,7 @@ ready_to_measure = paml.Join()
 protocol.activities.append(ready_to_measure)
 
 ## Do the fluorescent dyes first, since they will settle less
-sequence = [['A','B',p_fs],['C','D',p_fs],['E','F',p_bs]]
+sequence = [['A','B',p_fs],['C','D',p_rs],['E','F',p_bs]]
 for vars in sequence:
     location = paml.ContainerCoordinates(in_container=plate, coordinates=vars[0]+'1:'+vars[1]+'1')
     protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
