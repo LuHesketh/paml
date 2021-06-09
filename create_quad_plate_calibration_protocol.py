@@ -103,9 +103,6 @@ protocol.material = {ddh2o, pbs, fluorescein_solution, sulforhodamine101_solutio
 
 ## Provision the four materials
 # Particles and fluorescein start in tubes
-p_ms = protocol.execute_primitive('Provision', resource=microsphere_solution, destination=bead_source,
-                                   amount=sbol3.Measure(1, tyto.OM.milliliter))
-protocol.add_flow(protocol.initial(), p_ms) # start with provisioning
 p_fs = protocol.execute_primitive('Provision', resource=fluorescein_solution, destination=fluorescein_source,
                                    amount=sbol3.Measure(1, tyto.OM.milliliter))
 protocol.add_flow(protocol.initial(), p_fs) # start with provisioning
@@ -115,6 +112,12 @@ protocol.add_flow(protocol.initial(), p_rs) # start with provisioning
 p_bs = protocol.execute_primitive('Provision', resource=cascadeblue_solution, destination=cascadeblue_source,
                                    amount=sbol3.Measure(1, tyto.OM.milliliter))
 protocol.add_flow(protocol.initial(), p_bs) # start with provisioning
+p_ms = protocol.execute_primitive('Provision', resource=microsphere_solution, destination=bead_source,
+                                   amount=sbol3.Measure(1, tyto.OM.milliliter))
+protocol.add_flow(protocol.initial(), p_ms) # start with provisioning
+protocol.add_flow(p_fs, p_rs) # manually add order
+protocol.add_flow(p_rs, p_bs) # manually add order
+protocol.add_flow(p_bs, p_ms) # manually add order
 
 # Put the others into the plate
 location = paml.ContainerCoordinates(in_container=plate, coordinates='A2:D12')
@@ -127,18 +130,22 @@ protocol.locations.append(location) # TODO: This seems like a potential anti-pat
 p_dd = protocol.execute_primitive('Provision', resource=ddh2o, destination=location,
                                    amount=sbol3.Measure(100, tyto.OM.microliter))
 protocol.add_flow(protocol.initial(), p_dd) # start with provisioning for csacade blue and beads
+protocol.add_flow(p_pbs, p_dd) # manually add order
 
 ready_to_measure = paml.Join()
 protocol.activities.append(ready_to_measure)
 
 ## Do the fluorescent dyes first, since they will settle less
 sequence = [['A','B',p_fs],['C','D',p_rs],['E','F',p_bs]]
+last = None
 for vars in sequence:
     location = paml.ContainerCoordinates(in_container=plate, coordinates=vars[0]+'1:'+vars[1]+'1')
     protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
     # Dispense initial fluorescein
     p_f1 = protocol.execute_primitive('Dispense', source=vars[2].output_pin('samples'), destination=location,
                                        amount=sbol3.Measure(200, tyto.OM.microliter))
+    if last:
+        protocol.add_flow(last, p_f1) # manually add order
     # Serial dilution across columns 2-11
     last = p_f1
     for c in range(2, 12):
@@ -152,6 +159,7 @@ for vars in sequence:
     # Discard half of last well
     p_fdiscard = protocol.execute_primitive('Transfer', source=last.output_pin('samples'), destination=disposal,
                                             amount=sbol3.Measure(100, tyto.OM.microliter))
+    last = p_fdiscard
     # After the last step, ready to measure
     protocol.add_flow(p_fdiscard, ready_to_measure)
 
@@ -208,6 +216,12 @@ protocol.locations.append(location) # TODO: This seems like a potential anti-pat
 p_a = protocol.execute_primitive('MeasureAbsorbance', location=location,
                                           wavelength=sbol3.Measure(600, tyto.OM.nanometer))
 protocol.add_flow(ready_to_measure, p_a)
+
+protocol.add_flow(p_f, p_r) # manually add order
+protocol.add_flow(p_r, p_b) # manually add order
+protocol.add_flow(p_b, p_a) # manually add order
+
+
 result = protocol.add_output('absorbance', p_a.output_pin('measurements'))
 protocol.add_flow(result, protocol.final())
 result = protocol.add_output('green_fluorescence', p_f.output_pin('measurements'))
