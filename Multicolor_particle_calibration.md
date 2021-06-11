@@ -15,39 +15,39 @@ Adapted from https://dx.doi.org/10.17504/protocols.io.bht7j6rn and https://dx.do
 
 
 ## Materials
-* [10 uM cascade blue in ddH2O](https://identifiers.org/SBO:0000241)
-* [2 uM sulforhodamine 101 in PBS](https://identifiers.org/SBO:0000241)
-* [Phosphate-Buffered Saline](https://identifiers.org/pubchem.compound:24978514)
-* [3e9 microspheres/mL ddH2O](https://identifiers.org/SBO:0000241)
-* [Water, sterile-filtered, BioReagent, suitable for cell culture](https://identifiers.org/pubchem.substance:24901740)
 * [10 uM fluorescein in PBS](https://identifiers.org/SBO:0000241)
+* [2 uM sulforhodamine 101 in PBS](https://identifiers.org/SBO:0000241)
+* [Water, sterile-filtered, BioReagent, suitable for cell culture](https://identifiers.org/pubchem.substance:24901740)
+* [3e9 microspheres/mL ddH2O](https://identifiers.org/SBO:0000241)
+* [10 uM cascade blue in ddH2O](https://identifiers.org/SBO:0000241)
+* [Phosphate-Buffered Saline](https://identifiers.org/pubchem.compound:24978514)
 
 
 ## Containers
-* [Calibration Plate](https://identifiers.org/ncit:C43377) ([Microplate](https://identifiers.org/ncit:C43377))
+* [Liquid Waste Disposal](https://identifiers.org/ncit:C48166) ([Disposal](https://identifiers.org/ncit:C48166))
 * [Fluorescein](https://identifiers.org/ncit:C50236) ([Tube Device](https://identifiers.org/ncit:C50236))
 * [Cascade Blue](https://identifiers.org/ncit:C50236) ([Tube Device](https://identifiers.org/ncit:C50236))
-* [Silica beads](https://identifiers.org/ncit:C50236) ([Tube Device](https://identifiers.org/ncit:C50236))
 * [Sulforhodamine 101](https://identifiers.org/ncit:C50236) ([Tube Device](https://identifiers.org/ncit:C50236))
-* [Liquid Waste Disposal](https://identifiers.org/ncit:C48166) ([Disposal](https://identifiers.org/ncit:C48166))
+* [Silica beads](https://identifiers.org/ncit:C50236) ([Tube Device](https://identifiers.org/ncit:C50236))
+* [Calibration Plate](https://identifiers.org/ncit:C43377) ([Microplate](https://identifiers.org/ncit:C43377))
 
 
 ## Steps
-1. Pipette 100.0 microliter of [Phosphate-Buffered Saline](https://identifiers.org/pubchem.compound:24978514) into [Calibration Plate](https://identifiers.org/ncit:C43377) A2:D12
+1. Pipette 1.0 milliliter of [10 uM fluorescein in PBS](https://identifiers.org/SBO:0000241) into [Fluorescein](https://identifiers.org/ncit:C50236)
 
-2. Pipette 1.0 milliliter of [10 uM fluorescein in PBS](https://identifiers.org/SBO:0000241) into [Fluorescein](https://identifiers.org/ncit:C50236)
+2. Pipette 1.0 milliliter of [2 uM sulforhodamine 101 in PBS](https://identifiers.org/SBO:0000241) into [Sulforhodamine 101](https://identifiers.org/ncit:C50236)
 
-3. Pipette 200.0 microliter of [10 uM fluorescein in PBS](https://identifiers.org/SBO:0000241) from [Fluorescein](https://identifiers.org/ncit:C50236) into [Calibration Plate](https://identifiers.org/ncit:C43377) A1:B1
+3. Pipette 1.0 milliliter of [10 uM cascade blue in ddH2O](https://identifiers.org/SBO:0000241) into [Cascade Blue](https://identifiers.org/ncit:C50236)
 
-4. Pipette 100.0 microliter of [Water, sterile-filtered, BioReagent, suitable for cell culture](https://identifiers.org/pubchem.substance:24901740) into [Calibration Plate](https://identifiers.org/ncit:C43377) E2:H12
+4. Pipette 1.0 milliliter of [3e9 microspheres/mL ddH2O](https://identifiers.org/SBO:0000241) into [Silica beads](https://identifiers.org/ncit:C50236)
 
-5. Pipette 1.0 milliliter of [2 uM sulforhodamine 101 in PBS](https://identifiers.org/SBO:0000241) into [Sulforhodamine 101](https://identifiers.org/ncit:C50236)
+5. Pipette 100.0 microliter of [Phosphate-Buffered Saline](https://identifiers.org/pubchem.compound:24978514) into [Calibration Plate](https://identifiers.org/ncit:C43377) A2:D12
 
-6. Pipette 100.0 microliter from [Calibration Plate](https://identifiers.org/ncit:C43377) A1:B1 into [Calibration Plate](https://identifiers.org/ncit:C43377) A2:B2, mixing by pipetting up and down 3.0  times at destination
+6. Pipette 100.0 microliter of [Water, sterile-filtered, BioReagent, suitable for cell culture](https://identifiers.org/pubchem.substance:24901740) into [Calibration Plate](https://identifiers.org/ncit:C43377) E2:H12
 
-7. Pipette 1.0 milliliter of [10 uM cascade blue in ddH2O](https://identifiers.org/SBO:0000241) into [Cascade Blue](https://identifiers.org/ncit:C50236)
+7. Pipette 200.0 microliter of [10 uM fluorescein in PBS](https://identifiers.org/SBO:0000241) from [Fluorescein](https://identifiers.org/ncit:C50236) into [Calibration Plate](https://identifiers.org/ncit:C43377) A1:B1
 
-8. Pipette 1.0 milliliter of [3e9 microspheres/mL ddH2O](https://identifiers.org/SBO:0000241) into [Silica beads](https://identifiers.org/ncit:C50236)
+8. Pipette 100.0 microliter from [Calibration Plate](https://identifiers.org/ncit:C43377) A1:B1 into [Calibration Plate](https://identifiers.org/ncit:C43377) A2:B2, mixing by pipetting up and down 3.0  times at destination
 
 9. Pipette 100.0 microliter from [Calibration Plate](https://identifiers.org/ncit:C43377) A2:B2 into [Calibration Plate](https://identifiers.org/ncit:C43377) A3:B3, mixing by pipetting up and down 3.0  times at destination
 
@@ -141,11 +141,11 @@ Adapted from https://dx.doi.org/10.17504/protocols.io.bht7j6rn and https://dx.do
 
 54. Pipette 100.0 microliter from [Calibration Plate](https://identifiers.org/ncit:C43377) G11:H11 to [Liquid Waste Disposal](https://identifiers.org/ncit:C48166)
 
-55. Measure fluorescence of [Calibration Plate](https://identifiers.org/ncit:C43377) A1:B12 at excitation 488.0 nanometer and emission 530.0 nanometer
+55. Measure fluorescence of [Calibration Plate](https://identifiers.org/ncit:C43377) A1:B12 at excitation 488.0 nanometer and emission 530.0 nanometer / 30.0 nanometer
 
-56. Measure fluorescence of [Calibration Plate](https://identifiers.org/ncit:C43377) C1:D12 at excitation 561.0 nanometer and emission 610.0 nanometer
+56. Measure fluorescence of [Calibration Plate](https://identifiers.org/ncit:C43377) C1:D12 at excitation 561.0 nanometer and emission 610.0 nanometer / 20.0 nanometer
 
-57. Measure fluorescence of [Calibration Plate](https://identifiers.org/ncit:C43377) E1:F12 at excitation 405.0 nanometer and emission 450.0 nanometer
+57. Measure fluorescence of [Calibration Plate](https://identifiers.org/ncit:C43377) E1:F12 at excitation 405.0 nanometer and emission 450.0 nanometer / 50.0 nanometer
 
 58. Measure absorbance of [Calibration Plate](https://identifiers.org/ncit:C43377) G1:H12 at 600.0 nanometer
 

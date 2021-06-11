@@ -125,6 +125,7 @@ protocol.locations.append(location) # TODO: This seems like a potential anti-pat
 p_pbs = protocol.execute_primitive('Provision', resource=pbs, destination=location,
                                    amount=sbol3.Measure(100, tyto.OM.microliter))
 protocol.add_flow(protocol.initial(), p_pbs) # start with provisioning for fluorescein and sulforhodamine 101
+protocol.add_flow(p_ms, p_pbs) # manually add order
 location = paml.ContainerCoordinates(in_container=plate, coordinates='E2:H12')
 protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
 p_dd = protocol.execute_primitive('Provision', resource=ddh2o, destination=location,
@@ -137,15 +138,14 @@ protocol.activities.append(ready_to_measure)
 
 ## Do the fluorescent dyes first, since they will settle less
 sequence = [['A','B',p_fs],['C','D',p_rs],['E','F',p_bs]]
-last = None
+last = p_dd # manually add order
 for vars in sequence:
     location = paml.ContainerCoordinates(in_container=plate, coordinates=vars[0]+'1:'+vars[1]+'1')
     protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
     # Dispense initial fluorescein
     p_f1 = protocol.execute_primitive('Dispense', source=vars[2].output_pin('samples'), destination=location,
                                        amount=sbol3.Measure(200, tyto.OM.microliter))
-    if last:
-        protocol.add_flow(last, p_f1) # manually add order
+    protocol.add_flow(last, p_f1) # manually add order
     # Serial dilution across columns 2-11
     last = p_f1
     for c in range(2, 12):
@@ -194,21 +194,24 @@ location = paml.ContainerCoordinates(in_container=plate, coordinates='A1:B12')
 protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
 p_f = protocol.execute_primitive('MeasureFluorescence', location=location,
                                  excitationWavelength=sbol3.Measure(488, tyto.OM.nanometer),
-                                 emissionBandpassWavelength=sbol3.Measure(530, tyto.OM.nanometer))
+                                 emissionBandpassWavelength=sbol3.Measure(530, tyto.OM.nanometer),
+                                 emissionBandpassWidth = sbol3.Measure(30, tyto.OM.nanometer))
 protocol.add_flow(ready_to_measure, p_f)
 
 location = paml.ContainerCoordinates(in_container=plate, coordinates='C1:D12')
 protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
 p_r = protocol.execute_primitive('MeasureFluorescence', location=location,
                                  excitationWavelength=sbol3.Measure(561, tyto.OM.nanometer),
-                                 emissionBandpassWavelength=sbol3.Measure(610, tyto.OM.nanometer))
+                                 emissionBandpassWavelength=sbol3.Measure(610, tyto.OM.nanometer),
+                                 emissionBandpassWidth=sbol3.Measure(20, tyto.OM.nanometer))
 protocol.add_flow(ready_to_measure, p_r)
 
 location = paml.ContainerCoordinates(in_container=plate, coordinates='E1:F12')
 protocol.locations.append(location) # TODO: This seems like a potential anti-pattern
 p_b = protocol.execute_primitive('MeasureFluorescence', location=location,
                                  excitationWavelength=sbol3.Measure(405, tyto.OM.nanometer),
-                                 emissionBandpassWavelength=sbol3.Measure(450, tyto.OM.nanometer))
+                                 emissionBandpassWavelength=sbol3.Measure(450, tyto.OM.nanometer),
+                                 emissionBandpassWidth = sbol3.Measure(50, tyto.OM.nanometer))
 protocol.add_flow(ready_to_measure, p_b)
 
 location = paml.ContainerCoordinates(in_container=plate, coordinates='G1:H12')

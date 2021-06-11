@@ -124,8 +124,8 @@ def spectrophotometry_fluorescence_to_markdown(executable, mdc: MarkdownConverte
     excitation = executable.input_pin('excitationWavelength').to_markdown(mdc)
     # TODO: fix kludge: don't assume whether optionals are present
     bp_wavelength = executable.input_pin('emissionBandpassWavelength').to_markdown(mdc)
-    #bp_width = executable.input_pin('emissionBandpassWidth').to_markdown(mdc)
-    emission = bp_wavelength  #+' / '+bp_width
+    bp_width = executable.input_pin('emissionBandpassWidth').to_markdown(mdc)
+    emission = bp_wavelength  +' / '+bp_width
     #gain = executable.input_pin('gain').to_markdown(mdc)
     #return 'Measure fluorescence of '+location+' at excitation '+excitation+' and emission '+emission+' with gain = '+gain+'\n'
     # No gain kludge
