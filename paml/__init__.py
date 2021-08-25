@@ -5,11 +5,11 @@ import sbol3
 import uml # Note: looks unused, but is used in SBOLFactory
 
 # Import ontology
-__factory__ = SBOLFactory(locals(),
-                          posixpath.join(os.path.dirname(os.path.realpath(__file__)),
-                                         'paml.ttl'),
-                          'http://bioprotocols.org/paml#')
-__umlfactory__ = UMLFactory(__factory__)
+__factory__ = SBOLFactory('paml_internal',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         'paml.ttl'),
+            'http://bioprotocols.org/paml#')
+from paml_internal import *
 
 
 #########################################
