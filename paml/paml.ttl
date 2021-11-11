@@ -355,31 +355,50 @@ paml:SampleArray rdf:type owl:Class ;
         rdfs:subClassOf paml:SampleCollection ,
             [ rdf:type owl:Restriction ;
               owl:onProperty paml:containerType ;
-              owl:allValuesFrom xsd:anyURI ; # replace with container ontology, when available
+              owl:allValuesFrom paml:ContainerSpec ;
               owl:minCardinality "1"^^xsd:nonNegativeInteger ; owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
               rdfs:comment "Type of container used for storing the samples. The size and dimension may not match that of the array: it is up to execution to lay out the array in one or more containers"
             ] ,
             [ rdf:type owl:Restriction ;
               owl:onProperty paml:contents ;
-              owl:allValuesFrom xsd:string ; # need to replace this with an serializable array model
+              owl:allValuesFrom paml:PrimitiveArray ; # need to replace this with an serializable array model
               owl:minCardinality "1"^^xsd:nonNegativeInteger ; owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
               rdfs:comment "N-dimensional array of URI for specification or nulls"
             ] .
 
-paml:containerType rdf:type owl:DatatypeProperty ;
+paml:containerType rdf:type owl:ObjectProperty ;
         rdfs:comment '''''' ;
               rdfs:domain paml:SampleArray ;
-              rdfs:range xsd:anyURI ;
+              rdfs:range paml:ContainerSpec ;
               rdfs:label "container_type" .
 
-paml:contents rdf:type owl:DatatypeProperty ;
+paml:contents rdf:type owl:ObjectProperty ;
         rdfs:comment '''Description of the contents.
         TODO: need to decide whether this is a multi-valued property with associated array coordinates or a
         single-valued property with an array value.
         Currently set to string as a "dummy" value that can serialize anything.''' ;
+        rdfs:subPropertyOf opil:compositionalProperty ;
               rdfs:domain paml:SampleArray ;
-              rdfs:range xsd:string ;
+              rdfs:range paml:PrimitiveArray ;
               rdfs:label "contents" .
+
+paml:PrimitiveArray rdf:type owl:Class ;
+        rdfs:comment '''A PrimitiveArray is a one-dimensional array of primtitive types represented as strings''' ;
+        rdfs:subClassOf sbol:Identified ,
+        [ rdf:type owl:Restriction ;
+          owl:onProperty paml:elements ;
+          owl:allValuesFrom uml:OrderedPropertyValue ;
+          owl:minCardinality "0"^^xsd:nonNegativeInteger ;
+          rdfs:comment "The array elements"
+        ]  .
+
+paml:elements rdf:type owl:ObjectProperty ;
+        rdfs:comment '''The elements of a PrimitiveArray''' ;
+        rdfs:subPropertyOf opil:compositionalProperty ;
+        rdfs:domain paml:PrimitiveArray ;
+        rdfs:range uml:OrderedPropertyValue ;
+        rdfs:label "elements" .
+
 
 paml:SampleMask rdf:type owl:Class ;
         rdfs:comment '''A SampleMask is a subset of a SampleCollection. The subset of samples to be included is defined
@@ -436,7 +455,7 @@ paml:SampleData rdf:type owl:Class ;
                             [ rdf:type owl:Restriction ;
                               owl:onProperty paml:sampleDataValues ;
                               owl:allValuesFrom xsd:string ; # need to replace this with an serializable array model
-                              owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+                              owl:minCardinality "0"^^xsd:nonNegativeInteger ;
                               owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
                               ] ,
                             [ rdf:type owl:Restriction ;
@@ -454,7 +473,6 @@ paml:sampleDataValues rdf:type owl:ObjectProperty ;
 
 paml:fromSamples rdf:type owl:ObjectProperty ;
         rdfs:comment '''The fromSamples property indicates the SampleCollection from which the data were collected.''' ;
-              rdfs:subPropertyOf opil:compositionalProperty ;
               rdfs:domain paml:SampleData ;
               rdfs:range paml:SampleCollection ;
               rdfs:label "from_samples" .
@@ -477,7 +495,7 @@ paml:prefixMap a owl:DatatypeProperty ,
     rdfs:range xsd:string ;
     rdfs:label "prefixMap" ;
     rdfs:comment "A prefix map in JSON-LD format, to be applied to a queryString." .
-    
+
 
 paml:ContainerSpec a owl:Class ;
         rdfs:comment '''A ContainerSpec is used to indicate the type of container to be used for a SampleArray, e.g.,

@@ -9,3 +9,6 @@ notebooks/cluster*
 .vscode/launch.json
 .vscode/settings.json
 notebooks/test_LUDOX_markdown.md
+.vscode/extensions.json
+notebooks/df.csv
+notebooks/igem_ludox_test_exec_data.nt
